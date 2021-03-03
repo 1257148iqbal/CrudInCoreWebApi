@@ -1,0 +1,115 @@
+﻿1. Create a Project Asp.Net Core Web Application Named CrudInCoreApi => API => Unchecked HTTPs => Create
+2. Create a Folder in Project Root Named Models => Right Click Models => Add => Folder Named Repository
+   GoTo appsettings.json => Write These 
+   "ConnectionStrings": {
+    "Dbcon": "Server=(localdb)\\mssqllocaldb; database=CrudInCoreWebApiDB; Trusted_Connection=True; MultipleActiveResultSets=True;"
+
+    Goto Startup.cs => ConfigureServices Method => Write These
+        services.AddDbContext<CrudInCoreWebApiContext>(options=> options.UseSqlServer(Configuration.GetConnectionString("DbCon")));
+       
+  }
+3. Take a Class Named Trainee  and CrudInCoreWebApiContext in Model Class: Write these in Trainee Calss
+	[Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int TraineeID { get; set; }
+        public string Name { get; set; }
+        public DateTime DateOfBirth { get; set; }
+        public string EmailID { get; set; }
+        public string Gender { get; set; }
+        public string Address { get; set; }
+
+4. Take an Interface named IDataAccessRepository and a Class named ClsRepositoryTrainee
+5. install: Install-package Microsoft.EntityFrameworkCore  //For DbContext
+6. install: Install-package Microsoft.EntityFrameworkCore.sqlserver  //For SqlServer and install: Install-package Microsoft.EntityFrameworkCore.Tools  //For Migration
+7. Create a Method named OnModelCreating in CrudInCoreWebApiContext => Write These 
+protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Trainee>().HasData(
+                new Trainee
+                {
+                    TraineeID=1,
+                    Name="ALI",
+                    DateOfBirth= new DateTime(1994, 01, 25),
+                    EmailID="ali@gmail.com",
+                    Gender="Male",
+                    Address="Dhaka", 
+                    CellPhoneNo="01813148110"
+                },
+
+
+                new Trainee
+                {
+                    TraineeID = 2,
+                    Name = "Harami",
+                    DateOfBirth = new DateTime(1994, 01, 25),
+                    EmailID = "harami@gmail.com",
+                    Gender = "Female",
+                    Address = "Ctg",
+                    CellPhoneNo = "01813148110"
+                },
+                new Trainee
+                {
+                    TraineeID = 3,
+                    Name = "Arefin",
+                    DateOfBirth = new DateTime(1994, 01, 25),
+                    EmailID = "arefin@gmail.com",
+                    Gender = "Male",
+                    Address = "Rohingga",
+                    CellPhoneNo = "01815501137"
+                }
+
+
+                );
+8. GoTo IDataAccessRepository => Write These 
+    public interface IDataAccessRepository<TEntity>
+    {
+        IEnumerable<TEntity> GelAll();
+        TEntity Get(long id);
+        void Add(TEntity entity);
+        void Update(TEntity dbEntity, TEntity entity);
+        void Delete(TEntity entity);
+    }
+9. GoTo ClsRepositoryTrainee Class => Write These
+    public class ClsRepositoryTrainee : IDataAccessRepository<Trainee>
+    {
+        readonly CrudInCoreWebApiContext db;
+
+        public ClsRepositoryTrainee(CrudInCoreWebApiContext apiContext)
+        {
+            db = apiContext;
+        }
+
+
+        public void Add(Trainee entity)
+        {
+            db.Trainees.Add(entity);
+            db.SaveChanges();
+        }
+
+        public void Delete(Trainee entity)
+        {
+            db.Trainees.Remove(entity);
+            db.SaveChanges();
+        }
+
+        public IEnumerable<Trainee> GelAll()
+        {
+            return db.Trainees.ToList();
+        }
+
+        public Trainee Get(long id)
+        {
+            return db.Trainees.FirstOrDefault(x => x.TraineeID == id);
+        }
+
+        public void Update(Trainee dbEntity, Trainee entity)
+        {
+            dbEntity.Name = entity.Name;
+            dbEntity.DateOfBirth = entity.DateOfBirth;
+            dbEntity.EmailID = entity.EmailID;
+            dbEntity.Address = entity.Address;
+            dbEntity.CellPhoneNo = entity.CellPhoneNo;
+            db.SaveChanges();
+        }
+    }
+10. 
